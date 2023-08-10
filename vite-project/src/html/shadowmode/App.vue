@@ -124,7 +124,7 @@ onMounted(() => {
     cursor.y = event.clientY / window.innerHeight - .5;
     document.querySelector('.cursor').style.cssText = `left: ${event.clientX}px; top: ${event.clientY}px;`;
   }, false);
-  
+
   // 基于容器视图禁用渲染器
   let secondContainer = false;
   const ob = new IntersectionObserver(payload => {
@@ -145,11 +145,75 @@ onMounted(() => {
     fillLight.position.x += (parallaxX * 8 - fillLight.position.x) * 2 * deltaTime;
     cameraGroup.position.z -= (parallaxY / 3 + cameraGroup.position.z) * 2 * deltaTime;
     cameraGroup.position.x += (parallaxX / 3 - cameraGroup.position.x) * 2 * deltaTime;
+    // camera.position.z -= (parallaxY / 3 + camera.position.z) * 2 * deltaTime;
+    // camera.position.x += (parallaxX / 3 - camera.position.x) * 2 * deltaTime;
     TWEEN.update();
     secondContainer ? renderer2.render(scene, camera2) : renderer.render(scene, camera);
     requestAnimationFrame(tick);
   }
   tick();
+
+
+
+  // 鼠标悬浮到菜单动画
+  const btn = document.querySelectorAll('nav > .a');
+  function update(e) {
+    const span = this.querySelector('span');
+    if (e.type === 'mouseleave') {
+      span.style.cssText = '';
+    } else {
+      const { offsetX: x, offsetY: y } = e;
+      const { offsetWidth: width, offsetHeight: height } = this;
+      const walk = 20;
+      const xWalk = (x / width) * (walk * 2) - walk, yWalk = (y / height) * (walk * 2) - walk;
+      span.style.cssText = `transform: translate(${xWalk}px, ${yWalk}px);`
+    }
+  }
+  btn.forEach(b => b.addEventListener('mousemove', update));
+  btn.forEach(b => b.addEventListener('mouseleave', update));
+
+  // 相机动画
+  function animateCamera(position, rotation) {
+    new TWEEN.Tween(camera2.position)
+      .to(position, 1800)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start()
+      .onComplete(function () {
+        TWEEN.remove(this)
+      })
+    new TWEEN.Tween(camera2.rotation)
+      .to(rotation, 1800)
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .start()
+      .onComplete(function () {
+        TWEEN.remove(this);
+      });
+  }
+
+  // 页面Tab点击事件监听
+  document.getElementById('one').addEventListener('click', () => {
+    document.getElementById('one').classList.add('active');
+    document.getElementById('three').classList.remove('active');
+    document.getElementById('two').classList.remove('active');
+    document.getElementById('content').innerHTML = '昨夜西风凋碧树。独上高楼，望尽天涯路。';
+    animateCamera({ x: 3.2, y: 2.8, z: 3.4 }, { y: 1 });
+  });
+
+  document.getElementById('two').addEventListener('click', () => {
+    document.getElementById('two').classList.add('active');
+    document.getElementById('one').classList.remove('active');
+    document.getElementById('three').classList.remove('active');
+    document.getElementById('content').innerHTML = '衣带渐宽终不悔，为伊消得人憔悴。';
+    animateCamera({ x: -1.4, y: 2.8, z: 4.4 }, { y: -0.1 });
+  });
+
+  document.getElementById('three').addEventListener('click', () => {
+    document.getElementById('three').classList.add('active');
+    document.getElementById('one').classList.remove('active');
+    document.getElementById('two').classList.remove('active');
+    document.getElementById('content').innerHTML = '众里寻他千百度，蓦然回首，那人却在灯火阑珊处。';
+    animateCamera({ x: -4.8, y: 2.9, z: 3.2 }, { y: -0.75 });
+  });
 
 })
 </script>
