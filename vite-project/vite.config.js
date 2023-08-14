@@ -30,4 +30,15 @@ export default defineConfig({
       },
     },
   },
+  configureWebpack: (config) => {
+    console.log('config.module.rules==', config.module.rules)
+    config.module.rules.push({
+      test: /\.glsl$/,
+      use: [
+        {
+          loader: "raw-loader",
+        },
+      ],
+    });
+  },
 })
