@@ -3,8 +3,8 @@ import { onMounted } from 'vue'
 import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import testVertexShader from './shaders/pattern/vertexa.glsl?raw';
-import testFragmentShader from './shaders/pattern/fragment1.glsl?raw';
+import testVertexShader from './shaders/pattern/vertexa.glsl';
+import testFragmentShader from './shaders/pattern/fragment1.glsl';
 
 // 定义渲染尺寸
 const sizes = {
@@ -48,15 +48,23 @@ onMounted(() => {
   const testGeometry = new THREE.PlaneBufferGeometry(1, 1, 32, 32);
   const testMaterial = new THREE.RawShaderMaterial({
     vertexShader: testVertexShader,
-    fragmentShader: testFragmentShader
+    fragmentShader: testFragmentShader,
+    uniforms: {
+      uFrequency: { value: new THREE.Vector2(10, 5) },
+      uTime: { value: 0 }
+    }
   });
   const testMesh = new THREE.Mesh(testGeometry, testMaterial);
+  testMesh.scale.y = 2 / 3;
   scene.add(testMesh);
 
   // 动画
+  const clock = new THREE.Clock()
   const tick = () => {
-    testMesh && (testMesh.rotation.y += .004);
+    // testMesh && (testMesh.rotation.y += .004);
     controls && controls.update();
+    const elapsedTime = clock.getElapsedTime();
+    testMaterial.uniforms.uTime.value = elapsedTime;
     renderer.render(scene, camera);
     // 页面重绘时调用自身
     window.requestAnimationFrame(tick);

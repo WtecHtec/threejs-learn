@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-
+import glsl from "vite-plugin-glsl"
 
 import path, { resolve } from 'path';
 
@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, 'src/html');
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), glsl()],
   root,
   resolve: {
     alias: {
@@ -34,6 +34,7 @@ export default defineConfig({
     console.log('config.module.rules==', config.module.rules)
     config.module.rules.push({
       test: /\.glsl$/,
+      exclude: /node_modules/,
       use: [
         {
           loader: "raw-loader",
