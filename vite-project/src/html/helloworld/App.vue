@@ -1,10 +1,12 @@
 <script setup>
-import HelloWorld from '../../components/HelloWorld.vue'
+import { onMounted } from 'vue'
+import './style.css';
+
+onMounted(() => {
+
+})
 </script>
 
 <template>
-  <HelloWorld msg="Vite + Vue" />
-</template>
 
-<style scoped>
-</style>
+</template>
