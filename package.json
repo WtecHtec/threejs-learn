@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "cannon-es": "^0.20.0",
     "vite-plugin-glsl": "^1.1.2"
   }
 }
