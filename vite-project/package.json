@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "proto": "pbjs  -t json-module -w commonjs -o ./src/html/proto-exp/proto/proto.js  ./src/html/proto-exp/proto/*.proto"
   },
   "dependencies": {
     "vite-plugin-glsl": "^1.1.2",

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import glsl from "vite-plugin-glsl"
-
+import requireTransform from 'vite-plugin-require-transform';
 import path, { resolve } from 'path';
 
 const root = path.resolve(__dirname, 'src/html');
@@ -9,7 +9,9 @@ const root = path.resolve(__dirname, 'src/html');
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue(), glsl()],
+  plugins: [vue(), glsl(), requireTransform({
+    fileRegex: /.js$|.vue$/
+  }),],
   root,
   resolve: {
     alias: {
