@@ -11,11 +11,11 @@ var $root = ($protobuf.roots["default"] || ($protobuf.roots["default"] = new $pr
         fields: {
           name: {
             type: "string",
-            id: 0
+            id: 1
           },
           age: {
             type: "int64",
-            id: 1
+            id: 2
           }
         }
       }
@@ -23,5 +23,6 @@ var $root = ($protobuf.roots["default"] || ($protobuf.roots["default"] = new $pr
   }
 });
 
-// module.exports = $root;
+
 export default $root;
+// module.exports = $root;
