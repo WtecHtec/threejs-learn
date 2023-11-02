@@ -10,6 +10,7 @@
     "proto": "pbjs  -t json-module -w commonjs -o ./src/html/proto-exp/proto/proto.js  ./src/html/proto-exp/proto/*.proto"
   },
   "dependencies": {
+    "cannon-es": "^0.20.0",
     "nice-color-palettes": "^3.0.0",
     "vite-plugin-glsl": "^1.1.2",
     "vue": "^3.3.4"
