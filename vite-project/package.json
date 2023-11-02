@@ -21,6 +21,7 @@
     "raw-loader": "^4.0.2",
     "three": "^0.125.1",
     "vite": "^4.4.5",
+    "vite-plugin-require-transform": "^1.0.21",
     "webpack-glsl-loader": "^1.0.1"
   }
 }

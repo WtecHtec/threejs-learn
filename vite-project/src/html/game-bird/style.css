@@ -6,17 +6,18 @@
 html,
 body {
   overflow: hidden;
-  background: #a4f54c;
-  background-image: radial-gradient(at 73.0% 97.0%, hsl(319, 56%, 40%) 0px, transparent 50%), radial-gradient(at 90.0% 89.0%, hsl(261, 89%, 51%) 0px, transparent 50%), radial-gradient(at 52.0% 44.0%, hsl(211, 82%, 50%) 0px, transparent 50%), radial-gradient(at 4.0% 71.0%, hsl(315, 55%, 55%) 0px, transparent 50%), radial-gradient(at 37.0% 12.0%, hsl(23, 95%, 53%) 0px, transparent 50%)
+  background: oldlace;
+  cursor: pointer;
+  /* background-image: radial-gradient(at 73.0% 97.0%, hsl(319, 56%, 40%) 0px, transparent 50%), radial-gradient(at 90.0% 89.0%, hsl(261, 89%, 51%) 0px, transparent 50%), radial-gradient(at 52.0% 44.0%, hsl(211, 82%, 50%) 0px, transparent 50%), radial-gradient(at 4.0% 71.0%, hsl(315, 55%, 55%) 0px, transparent 50%), radial-gradient(at 37.0% 12.0%, hsl(23, 95%, 53%) 0px, transparent 50%) */
 }
 
-.webgl {
+/* .webgl {
   position: fixed;
   top: 50%;
   left: 50%;
   outline: none;
   transform: translate(-50%, -50%);
-}
+} */
 
 .github {
   position: fixed;

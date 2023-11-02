@@ -1,33 +1,33 @@
 <script setup>
 import { onMounted } from 'vue'
 import './style.css';
+
 import * as THREE from "three";
 import * as dat from "dat.gui";
 import * as CANNON from "cannon-es";
-const colors = require('nice-color-palettes');
- 
-
-console.log(colors.length);
-// => 100
- 
-console.log(colors[0]);
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 
 // 页面尺寸
 const sizes = {
-  width: 1080 || window.innerWidth,
-  height: 800,
+  width: window.innerWidth,
+  height: window.innerHeight,
 };
 
-
-let over = false
-
 onMounted(() => {
+  let gameStatus = false;
+  
 
-  const blocks = []
-   //  场景初始化
-   const canvas = document.querySelector("canvas.webgl");
+  function gameOver(collision) {
+    const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+    if (impactStrength > 1.5) { 
+       alert('over')
+       gameStatus = true
+    }
+  }
+
+  //  场景初始化
+  const canvas = document.querySelector("canvas.webgl");
 
   // Renderer
   const renderer = new THREE.WebGLRenderer({
@@ -37,28 +37,28 @@ onMounted(() => {
   });
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // renderer.center();
-
   // Scene
   const scene = new THREE.Scene();
-  // scene.position.set(10, 10, 0)
-  scene.background = new THREE.Color('0xFFDFDF')
-
-  
 
   // 相机
   // const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
-  const camera = new THREE.OrthographicCamera(sizes.width / - 2, sizes.width / 2, sizes.height / 2, sizes.height / - 2, 1, 100)
-  // camera.position.set(-3, 3, 3);
-  camera.position.set(0, 0, 10)
-  // camera.lookAt(mesh.position)
+  // camera.lookAt(new THREE.Vector3(0, 0, 0))
+  // camera.position.set(0, 0, 10);
+  // scene.add(camera);
+
+  // 控制器
+  // const controls = new OrbitControls(camera, canvas);
+  // controls.enableDamping = true;
+
+  // 相机
+  const camera = new THREE.OrthographicCamera(- sizes.width / 2, sizes.width / 2, sizes.height / 2, - sizes.height / 2, 1, 100)
+  // const camera = new THREE.OrthographicCamera(-20, 20, 10, -10, 1, 10)
+  camera.position.set(0, 0, 10);
+  // camera.lookAt(THREE.Vec3(0,0,0))
   scene.add(camera);
-
-
 
   // 光照
   // 环境光
@@ -66,14 +66,14 @@ onMounted(() => {
   scene.add(ambientLight);
   // 直射光
   const directionalLight = new THREE.DirectionalLight(0xffffff, 0.4);
-  // directionalLight.castShadow = true;
-  // directionalLight.shadow.mapSize.set(1024, 1024);
-  // directionalLight.shadow.camera.far = 15;
-  // directionalLight.shadow.camera.left = -7;
-  // directionalLight.shadow.camera.top = 7;
-  // directionalLight.shadow.camera.right = 7;
-  // directionalLight.shadow.camera.bottom = -7;
-  // directionalLight.position.set(5, 5, 5);
+  directionalLight.castShadow = true;
+  directionalLight.shadow.mapSize.set(1024, 1024);
+  directionalLight.shadow.camera.far = 15;
+  directionalLight.shadow.camera.left = -7;
+  directionalLight.shadow.camera.top = 7;
+  directionalLight.shadow.camera.right = 7;
+  directionalLight.shadow.camera.bottom = -7;
+  directionalLight.position.set(5, 5, 5);
   scene.add(directionalLight);
 
   // 页面缩放监听
@@ -86,221 +86,254 @@ onMounted(() => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   });
 
-
-
-  // 物理世界
-  const world = new CANNON.World();
-  world.broadphase = new CANNON.SAPBroadphase(world);
-  world.allowSleep = true;
-  world.gravity.set(0, -10, 0);
-
-
-
-  // 默认材质
-  const defaultMaterial = new CANNON.Material("default");
-  const defaultContactMaterial = new CANNON.ContactMaterial(
-    defaultMaterial,
-    defaultMaterial,
-    {
-      friction: 0.1,
-      restitution: 0.7,
-    }
-  );
-  world.defaultContactMaterial = defaultContactMaterial;
+// 创建地面
+const floor = new THREE.Mesh(
+  new THREE.PlaneBufferGeometry(10, 10),
+  new THREE.MeshStandardMaterial({
+    color: 0x00aa31,
+    metalness: 0.3,
+    roughness: 0.2,
+  })
+);
+floor.receiveShadow = true;
+floor.rotation.x = -Math.PI * 0.5;
+scene.add(floor);
 
 
 
-  // 地面
-  // const floorShape = new CANNON.Plane();
-  // const floorBody = new CANNON.Body();
-  // floorBody.mass = 0;
-  // floorBody.addShape(floorShape);
-  // floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI * 0.5);
-  // world.addBody(floorBody);
+// 物理世界
+const world = new CANNON.World();
+world.broadphase = new CANNON.SAPBroadphase(world);
+world.allowSleep = true;
+world.gravity.set(0, 0, 0);
 
 
 
-
-  const createBox = () => {
-      // 创建立方体 6 3 6
-      const boxGeometry = new THREE.BoxBufferGeometry(108, 800, 10);
-      const boxMaterial = new THREE.MeshStandardMaterial({
-        color: 0x607d8b,
-      });
-      const mesh = new THREE.Mesh(boxGeometry, boxMaterial);
-      mesh.position.set(0, 500, 0)
-      // mesh.scale.set(width, height, depth);
-      // mesh.castShadow = true;
-      // mesh.position.copy(position);
-      scene.add(mesh);
-
-      // const shape1 = new CANNON.Box(
-      //   new CANNON.Vec3(108, 800,  10)
-      // );
-      // const body1 = new CANNON.Body({
-      //   mass: 1,
-      //   position: new CANNON.Vec3(0, 3, 0),
-      //   shape: shape1,
-      //   material: defaultMaterial,
-      // });
-      // body1.position.copy(mesh.position);
-      // world.addBody(body1);
-
-      // const boxGeometry = new THREE.BoxBufferGeometry(1, 6, 1);
-      // const boxMaterial = new THREE.MeshStandardMaterial({
-      //   color: 0x607d8b,
-      // });
-      const mesh2 = new THREE.Mesh(boxGeometry, boxMaterial);
-      mesh2.position.set(0, -500, 0)
-
-      // mesh.scale.set(width, height, depth);
-      // mesh.castShadow = true;
-      // mesh.position.copy(position);
-      // scene.add(mesh2);
-
-      // const shape2 = new CANNON.Box(
-      //   new CANNON.Vec3(108, 800,  10)
-      // );
-      // const body2 = new CANNON.Body({
-      //   mass: 1,
-      //   position: new CANNON.Vec3(0, 3, 0),
-      //   shape: shape2,
-      //   material: defaultMaterial,
-      // });
-      // body2.position.copy(mesh2.position);
-      // // body.addEventListener("collide", playHitSound);
-      // world.addBody(body2);
-
-      const group = new THREE.Group();
-      group.add(mesh, mesh2);
-      group.position.set(600, (Math.floor(Math.random() * 2)  > 0 ? 1 : -1) * (Math.floor(Math.random() * 250)), 0)
-      group.name = 'bllllllllllllllock'
-
-      const shape3 = new CANNON.Box(
-        new CANNON.Vec3(108 * 0.5, 16000,  10)
-      );
-      const body3 = new CANNON.Body({
-        mass: 1,
-        position: new CANNON.Vec3(0, 3, 0),
-        shape: shape3,
-        material: defaultMaterial,
-      });
-      body3.position.copy(group.position);
-      // body.addEventListener("collide", playHitSound);
-      world.addBody(body3);
-
-      blocks.push({
-        body: body3,
-        mesh: group,
-      })
-
-      return group
+// 默认材质
+const defaultMaterial = new CANNON.Material("default");
+const defaultContactMaterial = new CANNON.ContactMaterial(
+  defaultMaterial,
+  defaultMaterial,
+  {
+    friction: 0.1,
+    restitution: 0.7,
   }
+);
+world.defaultContactMaterial = defaultContactMaterial;
 
 
 
-  const boxGeometry = new THREE.BoxBufferGeometry(40, 40, 10);
-  const boxMaterial = new THREE.MeshStandardMaterial({
-    color: '#192655',
-  });
-  const bird = new THREE.Mesh(boxGeometry, boxMaterial);
-  // mesh.position.set(0, 500, 0)
-  // mesh.scale.set(width, height, depth);
-  // mesh.castShadow = true;
-  // mesh.position.copy(position);
-  scene.add(bird);
-  const shape = new CANNON.Box(
-    new CANNON.Vec3(40 * 0.5, 40 * 0.5, 10 * 0.5)
-  );
-  const biridBody = new CANNON.Body({
-    mass: 1,
-    position: new CANNON.Vec3(0, 3, 0),
+// 地面
+const floorShape = new CANNON.Plane();
+const floorBody = new CANNON.Body();
+floorBody.mass = 0;
+floorBody.addShape(floorShape);
+floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI * 0.5);
+world.addBody(floorBody);
+
+
+
+// 更新对象数组
+// const objectsToUpdate = [];
+
+// 创建小球
+const sphereGeometry = new THREE.SphereBufferGeometry(1, 24, 24);
+const sphereMaterial = new THREE.MeshStandardMaterial({
+  metalness: 0.4,
+  roughness: 0.4,
+  color: 0xff0000,
+});
+
+const birdObject = {}
+const createSphere = (radius, position) => {
+  // Three.js 网格
+  const mesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  mesh.castShadow = true;
+  mesh.scale.set(radius, radius, radius);
+  mesh.position.copy(position);
+  scene.add(mesh);
+  // Cannon.js 刚体
+  const shape = new CANNON.Sphere(radius * 0.5);
+  const body = new CANNON.Body({
+    mass: 5,
+    position: new CANNON.Vec3(0, 0, 0),
     shape: shape,
     material: defaultMaterial,
   });
-  biridBody.position.copy(bird.position);
-  
-  const handlePlay = (e) => {
-    console.log('handlePlay========')
-    console.log(e)
-    over = true
-    // alert('1')
-  }
-  biridBody.addEventListener("collide", handlePlay);
-  world.addBody(biridBody);
+  body.position.copy(position);
+  // body.addEventListener("collide", playHitound);
+  world.addBody(body);
+  // 保存到更新数组
+  // objectsToUpdate.push({ mesh, body });
+  birdObject.mesh = mesh
+  birdObject.body = body
+};
 
 
+// 创建立方体
+const boxGeometry = new THREE.BoxBufferGeometry(1, 1, 1);
+const boxMaterial = new THREE.MeshStandardMaterial({
+  metalness: 0.4,
+  roughness: 0.4,
+  color: 0x0091ff,
+});
+const createBox = (width, height, depth, position) => {
+  const mesh = new THREE.Mesh(boxGeometry, boxMaterial);
+  mesh.scale.set(width, height, depth);
+  mesh.castShadow = true;
+  mesh.position.copy(position);
+  scene.add(mesh);
+  const shape = new CANNON.Box(
+    new CANNON.Vec3(width * 0.5, height * 0.5, depth * 0.5)
+  );
+  const body = new CANNON.Body({
+    mass: 10,
+    position: new CANNON.Vec3(0, 0, 0),
+    shape: shape,
+    material: defaultMaterial,
+  });
+  body.position.copy(position);
+  body.addEventListener("collide", gameOver);
+  world.addBody(body);
+  // objectsToUpdate.push({ mesh, body });
+  return { mesh, body }
+};
+
+const pipeDatas = []
+function createPipe() {
+  const lowH = 500
+  const highH = 750
+  const ch = lowH + Math.floor(Math.random() * (highH - lowH))
+  console.log(ch)
+  const pipe1 =  createBox(50, 800, 1, { x: 800, y: ch, z: 0 });
+  const pipe2 =createBox(50, 800, 1, { x: 800, y: (-highH + ( highH - ch)), z: 0 });
+  pipeDatas.push({ pipe1, pipe2 })
+}
 
 
+function bodyCopyM(pipe,  key, speed ) {
+  const { mesh, body } = pipe
+  mesh.position[key] = mesh.position[key]  + speed
+  body.position.copy(mesh.position)
+}
 
-  const block = createBox()
-  // blocks.push(block)
-  scene.add(block);
+function rmEl(pipe) {
+  const { mesh, body } = pipe
+  scene.remove(mesh)
+  world.removeBody(body)
+}
 
-  // 动画
-  const clock = new THREE.Clock();
-  let oldElapsedTime = 0;
-  let step = 0
-  const tick = () => {
-    if (over) return
-    const elapsedTime = clock.getElapsedTime();
-    const deltaTime = elapsedTime - oldElapsedTime;
-    oldElapsedTime = elapsedTime;
-
-    // 更新物理效果
-    world.step(1 / 60, deltaTime, 3);
-    // console.log('biridBody.position----', biridBody.position)
-    bird.position.copy(biridBody.position);
-    
-    // for (const object of objectsToUpdate) {
-    //   object.mesh.position.copy(object.body.position);
-    //   object.mesh.quaternion.copy(object.body.quaternion);
-    // }
-
-    step = step + 1
-    if ( step > 500) {
-      const block = createBox()
-      // blocks.push(block)
-      scene.add(block);
-      step = 0
+function updatePipe() {
+  pipeDatas.forEach(( { pipe1 ,  pipe2}, index) => {
+    if (pipe1.mesh.position.x < -800) {
+      pipeDatas.splice(index, 1)
+      rmEl(pipe1)
+      rmEl(pipe2)
+    } else {
+      bodyCopyM(pipe1, 'x', -5)
+      bodyCopyM(pipe2, 'x', -5)
     }
-    // console.log('oldElapsedTime===', deltaTime)
-    // 更新物理效果
-    // world.step(1 / 60, deltaTime, 3);
-    // for (const object of objectsToUpdate) {
-    //   object.mesh.position.copy(object.body.position);
-    //   object.mesh.quaternion.copy(object.body.quaternion);
-    // }
-    // controls.update();
-    // console.log('blocks===', blocks.length)
+  })
+}
 
-    // blocks.forEach((b, i )=> {
-    //   if ( b.position.x < - sizes.width / 2 - 120) {
-    //     scene.remove(b);
-    //     blocks.splice(i, 1)
-    //   } else {
-    //     b.position.x -= 1
-    //   }
-    // })
 
-    blocks.forEach((object, index) => {
-      // console.log('object==', object)
-      // object.mesh.position.copy(object.body.position);
-      object.mesh.position.x -= 1
-      object.body.position.copy(object.mesh.position)
+createSphere(10, {
+    x: -100,
+    y: 0,
+    z:0,
+  });
 
-      // console.log('blocks===', body.position)
-    })
+createPipe()
 
-    // group.position.x -= 1
-    renderer.render(scene, camera);
-    window.requestAnimationFrame(tick);
-  };
+function moveBird(speed = -1.82) {
+  if (birdObject) {
+    birdObject.mesh.position.y = birdObject.mesh.position.y + speed
+    birdObject.body.position.copy(birdObject.mesh.position)
+  }
+}
 
-  tick();
+
+let keyStatus = false 
+const timeout = 400
+let moverTimer = null
+// document.addEventListener('keydown', (e) => {
+//   console.log('KEY DOWN', e)
+//   if (e.keyCode === 32 ) {
+//     moveBird(-29.82)
+//     keyStatus = true
+//   }
+// })
+
+// document.addEventListener('keyup', (e) => {
+//   console.log('KEY DOWN', e)
+//   keyStatus = false
+// })
+
+// document.addEventListener('mousedown', () => {
+ 
+//   keyStatus = true
+//   clickTime = new Date().getTime();
+// })
+
+document.addEventListener('mouseup', () => {
+  // moveBird()
+  // const upTime = new Date().getTime();
+  // moveBird(9.82)
+  keyStatus = true
+  if (moverTimer) {
+    clearTimeout(moverTimer)
+  }
+  moverTimer = setTimeout(() => {
+    keyStatus = false
+  }, timeout);
+})
+
+
+let frame = 0
+let maxFrame = 30
+// 动画
+const clock = new THREE.Clock();
+let oldElapsedTime = 0;
+const tick = () => {
+  if (gameStatus) return
+  const elapsedTime = clock.getElapsedTime();
+  const deltaTime = elapsedTime - oldElapsedTime;
+  oldElapsedTime = elapsedTime;
+  // console.log('deltaTime==', deltaTime)
+  // 更新物理效果
+  world.step(1 / 60, deltaTime, 3);
+  // if ( !keyStatus ) {
+  //   console.log('keyStatus===', keyStatus)
+  // moveBird();
+  // }
+
+  moveBird(keyStatus ? 1.5 : -1);
+
+  updatePipe()
+
+  if ( frame >= maxFrame) {
+    createPipe()
+    frame = 0
+  } 
+  frame = frame + 1
+  
+  // birdObject.mesh.position.copy(birdObject.body.position)
+  // for (const object of objectsToUpdate) {
+  //   object.mesh.position.copy(object.body.position);
+  //   object.mesh.quaternion.copy(object.body.quaternion);
+  // }
+  // controls.update();
+  renderer.render(scene, camera);
+  window.requestAnimationFrame(tick);
+};
+
+tick();
+
 
 
 })
+
+
 </script>
 
 <template>

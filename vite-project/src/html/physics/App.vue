@@ -89,10 +89,10 @@ const playHitSound = (collision) => {
   const impactStrength = collision.contact.getImpactVelocityAlongNormal();
 
   if (impactStrength > 1.5) {
-    hitSound.volume = Math.random();
-    hitSound.currentTime = 0;
-    const porem = hitSound.play();
-    console.log('playHitSound ====', porem)
+    // hitSound.volume = Math.random();
+    // hitSound.currentTime = 0;
+    // const porem = hitSound.play();
+    console.log('playHitSound ====', impactStrength)
     // hitSound.play().then(value => {
     //   console.log(' playHitSound ========', value)
     // }).catch(err => {
@@ -108,7 +108,7 @@ const playHitSound = (collision) => {
 const world = new CANNON.World();
 world.broadphase = new CANNON.SAPBroadphase(world);
 world.allowSleep = true;
-world.gravity.set(0, -9.82, 0);
+world.gravity.set(0, 0, 0);
 
 
 
@@ -157,7 +157,7 @@ const createSphere = (radius, position) => {
   // Cannon.js 刚体
   const shape = new CANNON.Sphere(radius);
   const body = new CANNON.Body({
-    mass: 1,
+    mass: 10,
     position: new CANNON.Vec3(0, 3, 0),
     shape: shape,
     material: defaultMaterial,
@@ -187,7 +187,7 @@ const createBox = (width, height, depth, position) => {
     new CANNON.Vec3(width * 0.5, height * 0.5, depth * 0.5)
   );
   const body = new CANNON.Body({
-    mass: 1,
+    mass: 10,
     position: new CANNON.Vec3(0, 3, 0),
     shape: shape,
     material: defaultMaterial,
@@ -227,10 +227,10 @@ const tick = () => {
   oldElapsedTime = elapsedTime;
   // 更新物理效果
   world.step(1 / 60, deltaTime, 3);
-  for (const object of objectsToUpdate) {
-    object.mesh.position.copy(object.body.position);
-    object.mesh.quaternion.copy(object.body.quaternion);
-  }
+  // for (const object of objectsToUpdate) {
+  //   object.mesh.position.copy(object.body.position);
+  //   object.mesh.quaternion.copy(object.body.quaternion);
+  // }
   controls.update();
   renderer.render(scene, camera);
   window.requestAnimationFrame(tick);
