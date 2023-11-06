@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import './style.css';
 
+import {TweenMax, Power2, TimelineLite, TimelineMax} from "gsap";
 import * as THREE from "three";
 import * as dat from "dat.gui";
 import * as CANNON from "cannon-es";
@@ -15,6 +16,12 @@ const sizes = {
 };
 
 onMounted(() => {
+
+
+  // const getSY = () => {
+
+  // }
+
 	const spanDom = document.getElementById('score')
 	let gameStatus = false;
 	let score = 0
@@ -111,7 +118,7 @@ onMounted(() => {
 	const world = new CANNON.World();
 	world.broadphase = new CANNON.SAPBroadphase(world);
 	world.allowSleep = true;
-	world.gravity.set(0, 0, 0);
+	world.gravity.set(0, -19.82, 0);
 
 
 
@@ -122,7 +129,7 @@ onMounted(() => {
 		defaultMaterial,
 		{
 			friction: 0.1,
-			restitution: 0.7,
+			restitution: 0.1,
 		}
 	);
 	world.defaultContactMaterial = defaultContactMaterial;
@@ -130,13 +137,13 @@ onMounted(() => {
 
 
 	// 地面
-	const floorShape = new CANNON.Plane();
-	const floorBody = new CANNON.Body();
-	floorBody.name = 'floor'
-	floorBody.mass = 0;
-	floorBody.addShape(floorShape);
-	floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI * 0.5);
-	world.addBody(floorBody);
+	// const floorShape = new CANNON.Plane();
+	// const floorBody = new CANNON.Body();
+	// floorBody.name = 'floor'
+	// floorBody.mass = 0;
+	// floorBody.addShape(floorShape);
+	// floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI * 0.5);
+	// world.addBody(floorBody);
 
 
 
@@ -162,15 +169,18 @@ onMounted(() => {
 		// Cannon.js 刚体
 		const shape = new CANNON.Sphere(radius * 0.5);
 		const body = new CANNON.Body({
-			mass: 1,
+			mass: 0,
 			position: new CANNON.Vec3(0, 0, 0),
 			shape: shape,
 			material: defaultMaterial,
+      collisionResponse: false
 		});
 		body.position.copy(position);
 		// body.addEventListener("collide", playHitound);
 		body.name = 'bird'
 		world.addBody(body);
+    // body.velocity = new CANNON.Vec3(0, 10, 0)
+    console.log('velocity----', body.velocity)
 		// 保存到更新数组
 		// objectsToUpdate.push({ mesh, body });
 		birdObject.mesh = mesh
@@ -195,10 +205,11 @@ onMounted(() => {
 			new CANNON.Vec3(width * 0.5, height * 0.5, depth * 0.5)
 		);
 		const body = new CANNON.Body({
-			mass: 0,
+			mass: 5,
 			position: new CANNON.Vec3(0, 0, 0),
 			shape: shape,
 			material: defaultMaterial,
+      isTrigger: false
 		});
 		body.position.copy(position);
 		body.addEventListener("collide", gameOver);
@@ -264,9 +275,16 @@ onMounted(() => {
 
 	createPipe()
 
+  let vy = 0 
+  let dt = 5
+  let deltaTime = 0
+  let G = 1
 	function moveBird(speed = -1.82) {
-		if (birdObject) {
-			birdObject.mesh.position.y = birdObject.mesh.position.y + speed
+    // birdObject.mesh.position.copy(birdObject.body.position)
+    if (birdObject) {
+      // const sy = vy * deltaTime + 0.5 + speed * deltaTime * deltaTime
+      // vy = vy + speed * deltaTime
+			birdObject.mesh.position.y = birdObject.mesh.position.y - G
 			birdObject.body.position.copy(birdObject.mesh.position)
 			// console.log('sss')
 			// console.log(birdObject.body.position, birdObject.mesh.position)
@@ -296,17 +314,28 @@ onMounted(() => {
 	//   clickTime = new Date().getTime();
 	// })
 
-	document.addEventListener('mouseup', () => {
+
+	document.addEventListener('click', () => {
+    event.preventDefault();
 		// moveBird()
 		// const upTime = new Date().getTime();
 		// moveBird(9.82)
-		keyStatus = true
-		if (moverTimer) {
-			clearTimeout(moverTimer)
-		}
-		moverTimer = setTimeout(() => {
-			keyStatus = false
-		}, timeout);
+    console.log('mouseup===')
+    const { mesh, body } = birdObject
+    const t1 = new TimelineMax();
+    t1.to(mesh.position, 0.5, {y:mesh.position.y + 19.82, ease: Power2.easesOut})
+    const t2 = new TimelineMax();
+    t2.to(body.position, 0.5, {y:body.position.y + 19.82, ease: Power2.easesOut})
+
+    // birdObject.body.applyForce(new CANNON.Vec3(0, 1000, 0), birdObject.body.position)
+		// keyStatus = true
+    // // birdObject.body.position.y = birdObject.body.position.y +  19.82
+		// if (moverTimer) {
+		// 	clearTimeout(moverTimer)
+		// }
+		// moverTimer = setTimeout(() => {
+		// 	keyStatus = false
+		// }, timeout);
 	})
 
 
@@ -318,7 +347,7 @@ onMounted(() => {
 	const tick = () => {
 		if (gameStatus) return
 		const elapsedTime = clock.getElapsedTime();
-		const deltaTime = elapsedTime - oldElapsedTime;
+		deltaTime = elapsedTime - oldElapsedTime;
 		oldElapsedTime = elapsedTime;
 		// console.log('deltaTime==', deltaTime)
 		// 更新物理效果
