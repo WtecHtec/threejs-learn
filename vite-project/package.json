@@ -10,7 +10,9 @@
     "proto": "pbjs  -t json-module -w commonjs -o ./src/html/proto-exp/proto/proto.js  ./src/html/proto-exp/proto/*.proto"
   },
   "dependencies": {
+    "@vue/compiler-sfc": "^3.3.13",
     "cannon-es": "^0.20.0",
+    "nanoid": "^5.0.4",
     "nice-color-palettes": "^3.0.0",
     "vite-plugin-glsl": "^1.1.2",
     "vue": "^3.3.4"
@@ -19,9 +21,11 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "dat.gui": "^0.7.9",
     "gsap": "^3.12.2",
+    "posthtml": "^0.16.6",
     "raw-loader": "^4.0.2",
     "three": "^0.125.1",
     "vite": "^4.4.5",
+    "vite-plugin-html": "^3.2.0",
     "vite-plugin-require-transform": "^1.0.21",
     "webpack-glsl-loader": "^1.0.1"
   }

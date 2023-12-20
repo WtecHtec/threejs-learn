@@ -315,28 +315,57 @@ onMounted(() => {
 	// })
 
 
-	document.addEventListener('click', () => {
-    event.preventDefault();
-		// moveBird()
-		// const upTime = new Date().getTime();
-		// moveBird(9.82)
-    console.log('mouseup===')
-    const { mesh, body } = birdObject
-    const t1 = new TimelineMax();
-    t1.to(mesh.position, 0.5, {y:mesh.position.y + 19.82, ease: Power2.easesOut})
-    const t2 = new TimelineMax();
-    t2.to(body.position, 0.5, {y:body.position.y + 19.82, ease: Power2.easesOut})
+  const keys = {
+    ArrowUp: false,
+    ArrowDown: false,
+    ArrowLeft: false,
+    ArrowRight: false,
+    Space: false,
+  };
 
-    // birdObject.body.applyForce(new CANNON.Vec3(0, 1000, 0), birdObject.body.position)
-		// keyStatus = true
-    // // birdObject.body.position.y = birdObject.body.position.y +  19.82
-		// if (moverTimer) {
-		// 	clearTimeout(moverTimer)
-		// }
-		// moverTimer = setTimeout(() => {
-		// 	keyStatus = false
-		// }, timeout);
-	})
+  
+  let isJumping = false;
+  const jumpSpeed = 5;
+
+  document.addEventListener('keydown', (event) => {
+    console.log('keydown')
+    if (event.code in keys) {
+      console.log('event.key ===', event.code, keys, keys[event.code] )
+      keys[event.code] = true;
+    }
+    
+  });
+
+  document.addEventListener('keyup', (event) => {
+    if (event.code in keys) {
+      keys[event.code] = false;
+    }
+    if (event.code === 'Space') isJumping = false;
+  });
+
+	// document.addEventListener('click', () => {
+  //   event.preventDefault();
+	// 	// moveBird()
+	// 	// const upTime = new Date().getTime();
+	// 	// moveBird(9.82)
+  //   console.log('mouseup===')
+  //   const { mesh, body } = birdObject
+  //   const t1 = new TimelineMax();
+  //   t1.to(mesh.position, 0.5, {y:mesh.position.y + 19.82, ease: Power2.easesOut})
+  //   const t2 = new TimelineMax();
+  //   t2.to(body.position, 0.5, {y:body.position.y + 19.82, ease: Power2.easesOut})
+
+  //   // birdObject.body.applyForce(new CANNON.Vec3(0, 1000, 0), birdObject.body.position)
+	// 	// keyStatus = true
+  //   // // birdObject.body.position.y = birdObject.body.position.y +  19.82
+	// 	// if (moverTimer) {
+	// 	// 	clearTimeout(moverTimer)
+	// 	// }
+	// 	// moverTimer = setTimeout(() => {
+	// 	// 	keyStatus = false
+	// 	// }, timeout);
+	// })
+
 
 
 	let frame = 0
@@ -357,9 +386,28 @@ onMounted(() => {
 		// moveBird();
 		// }
 
-		moveBird(keyStatus ? 1.5 : -1);
+		// moveBird(keyStatus ? 1.5 : -1);
 
-		updatePipe()
+      // 移动
+    // if (keys.ArrowUp) player.position.z -= 0.1;
+    // if (keys.ArrowDown) player.position.z += 0.1;
+
+    if (keys.ArrowLeft)  birdObject.mesh.position.x -= 0.1;
+    if (keys.ArrowRight)  birdObject.mesh.position.x += 0.1;
+
+    // 跳跃
+    if (keys.Space && !isJumping) {
+      isJumping = true;
+      // birdObject.mesh.position.y += jumpSpeed;
+      player.body.applyForce(new CANNON.Vec3(0, 20, 0), player.body.position)
+      birdObject.mesh.position.copy(player.body.position)
+    } else if (!isJumping) {
+      birdObject.mesh.position.y -= jumpSpeed;
+    } else {
+      isJumping = false;
+    }
+
+		// updatePipe()
 
 		if (frame >= maxFrame) {
 			createPipe()
@@ -397,3 +445,11 @@ onMounted(() => {
 		<span class='author'>three.js odessey</span>
 	</a>
 </template>
+
+
+
+<!-- ./acme.sh --install-cert -d sr7.top \
+--cert-file      /path/to/certfile/in/apache/cert.pem  \
+--key-file       /path/to/keyfile/in/apache/key.pem  \
+--fullchain-file /path/to/fullchain/certfile/apache/fullchain.pem \
+--reloadcmd     "service apache2 force-reload" -->
